@@ -65,26 +65,13 @@ const store: StoreOptions<RootState> = {
 
       return apiBaseUrl
     },
-    configPath(): string | undefined {
-      const configPath = getQueryParamValue('configPath')
-
-      return configPath
-    },
-    configUrl(): string | undefined {
-      const configUrl = getQueryParamValue('configUrl')
-
-      return configUrl
+    configParam(): string {
+      return getQueryParamValue('config', '') as string
     },
     proxyfiedConfigUrl(state, getters): string | undefined {
       const configProxyUrl = `${getters.apiBaseUrl}${API_BASE_PATH}/config`
 
-      if (getters.configUrl !== undefined) {
-        return `${configProxyUrl}?url=${getters.configUrl}`
-      }
-
-      if (getters.configPath !== undefined) {
-        return `${configProxyUrl}?path=${getters.configPath}`
-      }
+      return `${configProxyUrl}?config=${getters.configParam}`
     },
     theme(): Theme {
       let theme = Theme.Default
@@ -214,17 +201,6 @@ const store: StoreOptions<RootState> = {
         })
     },
     async fetchConfiguration({commit, state, getters, dispatch}) {
-      if (getters.proxyfiedConfigUrl === undefined) {
-        const configPathOrUrlIsMissing: ConfigError = {
-          id: ConfigErrorId.MissingPathOrUrl,
-          message: 'configPath or configUrl query param is missing',
-          data: {},
-        }
-
-        commit('setErrors', [configPathOrUrlIsMissing])
-        return
-      }
-
       const hydrateTile = (tile: TileConfig, groupTile?: TileConfig) => {
         // Create a identifier based on tile configuration
         tile.stateKey = tile.type + '_' + md5.hashStr(JSON.stringify(tile))
